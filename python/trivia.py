@@ -3,28 +3,33 @@
 
 class Game:
     def __init__(self):
-        self.players = []
-        self.places = [0] * 6
-        self.purses = [0] * 6
-        self.in_penalty_box = [0] * 6
+       # TODO: the fields of class Game should be private
+       self.players = []
+       self.places = [0] * 6
+       self.purses = [0] * 6
+       self.in_penalty_box = [0] * 6
 
-        self.pop_questions = []
-        self.science_questions = []
-        self.sports_questions = []
-        self.rock_questions = []
+       self.pop_questions = []
+       self.science_questions = []
+       self.sports_questions = []
+       self.rock_questions = []
 
-        self.current_player = 0
-        self.is_getting_out_of_penalty_box = False
+       self.current_player = 0
+       self.is_getting_out_of_penalty_box = False
 
-        for i in range(50):
-            self.pop_questions.append(u"Pop问题 %s" % i)
-            self.science_questions.append(u"Science问题 %s" % i)
-            self.sports_questions.append(u"Sports问题 %s" % i)
-            self.rock_questions.append(self.create_rock_question(i))
+       for i in range(50):
+           self.pop_questions.append(u"Pop问题 %s" % i)
+           self.science_questions.append(u"Science问题 %s" % i)
+           self.sports_questions.append(u"Sports问题 %s" % i)
+           # todo inline method Game.create_rock_question
+           self.rock_questions.append(self.create_rock_question(i))
 
+
+    # TODO: change method Game.create_rock_question to be private
     def create_rock_question(self, index):
         return u"Rock问题 %s" % index
 
+    # TODO: remove unused method Game.is_playable
     def is_playable(self):
         return self.how_many_players >= 2
 
@@ -33,16 +38,18 @@ class Game:
         self.places[self.how_many_players] = 0
         self.purses[self.how_many_players] = 0
         self.in_penalty_box[self.how_many_players] = False
-
-        print player_name + u" 加入游戏"
-        print u"一共有%s个玩家" % len(self.players)
-
+        print(player_name + u"加入游戏")
+        print(u"一共有%s个玩家" % len(self.players))
+        # TODO: the return value of method Game.add is not used
         return True
 
+
+    # TODO: how_many_players should be private because it is only used by this own class Game
     @property
     def how_many_players(self):
         return len(self.players)
 
+    # rename the name of the params of method Game.roll to be 'rollNumber'
     def roll(self, roll):
         print u"轮到%s" % self.players[self.current_player]
         print u"他扔了%s点" % roll
@@ -57,23 +64,70 @@ class Game:
                     self.places[self.current_player] = self.places[self.current_player] - 12
 
                 print self.players[self.current_player] + \
-                            u'跑到了 ' + \
-                            str(self.places[self.current_player])
+                      u'跑到了 ' + \
+                      str(self.places[self.current_player])
                 print u"目前的主题是 %s" % self._current_category
                 self._ask_question()
             else:
                 print u"%s 逃离禁区失败" % self.players[self.current_player]
                 self.is_getting_out_of_penalty_box = False
         else:
+            # TODO: duplicate code in method Game.roll
             self.places[self.current_player] = self.places[self.current_player] + roll
             if self.places[self.current_player] > 11:
                 self.places[self.current_player] = self.places[self.current_player] - 12
 
             print self.players[self.current_player] + \
-                        u'跑到了 ' + \
-                        str(self.places[self.current_player])
+                  u'跑到了 ' + \
+                  str(self.places[self.current_player])
             print u"主题是 %s" % self._current_category
             self._ask_question()
+
+
+    def was_correctly_answered(self):
+        if self.in_penalty_box[self.current_player]:
+            if self.is_getting_out_of_penalty_box:
+                print u'回答正确!!!!'
+                self.purses[self.current_player] += 1
+                print self.players[self.current_player] + \
+                      u' 目前有 ' + \
+                      str(self.purses[self.current_player]) + \
+                      u' 个金币.'
+                # TODO: rename variable 'winner' to be 'isGameStillInProgress'
+                winner = self._did_player_win()
+                self.current_player += 1
+                if self.current_player == len(self.players): self.current_player = 0
+
+                return winner
+            else:
+                # TODO: duplicate code in method Game.was_correctly_answered outer
+                self.current_player += 1
+                if self.current_player == len(self.players): self.current_player = 0
+                return True
+        else:
+            # TODO: duplicate code in method Game.was_correctly_answered
+            print "回答正确!!!!"
+            self.purses[self.current_player] += 1
+            print self.players[self.current_player] + \
+                  u' 目前有 ' + \
+                  str(self.purses[self.current_player]) + \
+                  u' 个金币.'
+
+            winner = self._did_player_win()
+            self.current_player += 1
+            if self.current_player == len(self.players): self.current_player = 0
+
+            return winner
+
+    def wrong_answer(self):
+        print u'答案不正确'
+        print self.players[self.current_player] + u" 被送往禁区"
+        self.in_penalty_box[self.current_player] = True
+
+        self.current_player += 1
+        if self.current_player == len(self.players): self.current_player = 0
+        # TODO: return value of wrong_answer is unnecessary and should be remove
+        return True
 
     def _ask_question(self):
         if self._current_category == 'Pop': print self.pop_questions.pop(0)
@@ -94,52 +148,7 @@ class Game:
         if self.places[self.current_player] == 10: return 'Sports'
         return 'Rock'
 
-    def was_correctly_answered(self):
-        if self.in_penalty_box[self.current_player]:
-            if self.is_getting_out_of_penalty_box:
-                print u'回答正确!!!!'
-                self.purses[self.current_player] += 1
-                print self.players[self.current_player] + \
-                    u' 目前有 ' + \
-                    str(self.purses[self.current_player]) + \
-                    u' 个金币.'
-
-                winner = self._did_player_win()
-                self.current_player += 1
-                if self.current_player == len(self.players): self.current_player = 0
-
-                return winner
-            else:
-                self.current_player += 1
-                if self.current_player == len(self.players): self.current_player = 0
-                return True
-
-
-
-        else:
-
-            print "回答正确!!!!"
-            self.purses[self.current_player] += 1
-            print self.players[self.current_player] + \
-                u' 目前有 ' + \
-                str(self.purses[self.current_player]) + \
-                u' 个金币.'
-
-            winner = self._did_player_win()
-            self.current_player += 1
-            if self.current_player == len(self.players): self.current_player = 0
-
-            return winner
-
-    def wrong_answer(self):
-        print u'答案不正确'
-        print self.players[self.current_player] + u" 被送往禁区"
-        self.in_penalty_box[self.current_player] = True
-
-        self.current_player += 1
-        if self.current_player == len(self.players): self.current_player = 0
-        return True
-
+    # TODO: the name of the method Game._did_player_win should be Game.is_game_still_in_progress
     def _did_player_win(self):
         return not (self.purses[self.current_player] == 6)
 
